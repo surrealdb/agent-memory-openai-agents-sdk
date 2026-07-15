@@ -27,11 +27,10 @@ Both talk to Spectron through a single `SpectronClient`, scoped by a `MemoryScop
 
 ```bash
 pip install spectron-openai-agents
-
-# The Spectron SDK is used to reach a deployment. During the Spectron preview,
-# install it alongside the integration:
-pip install "spectron-openai-agents[spectron]"
 ```
+
+This pulls in the Spectron SDK (`surrealdb[spectron]`), which the integration
+uses to reach a deployment.
 
 Set the connection and model credentials:
 

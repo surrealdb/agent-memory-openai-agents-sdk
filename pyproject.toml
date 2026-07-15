@@ -32,15 +32,10 @@ classifiers = [
 ]
 dependencies = [
     "openai-agents>=0.0.1",
+    "surrealdb[spectron]",
 ]
 
 [project.optional-dependencies]
-# The Spectron SDK is imported lazily, only when a client is built from
-# settings or the environment. It is kept as an extra so the package installs
-# during the Spectron preview even where the SDK is not yet published.
-spectron = [
-    "surrealdb[spectron]",
-]
 dev = [
     "pytest>=8.0",
     "pytest-asyncio>=0.23",

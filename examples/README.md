@@ -11,10 +11,10 @@ export SPECTRON_DATABASE="your-database"
 export SPECTRON_TOKEN="your-token"   # optional for local instances
 ```
 
-Install the package with the Spectron SDK before running them:
+Install the package before running them:
 
 ```bash
-pip install -e "..[spectron]"
+pip install -e ..
 ```
 
 | Script                             | What it shows                                                    |
