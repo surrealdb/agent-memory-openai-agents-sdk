@@ -11,7 +11,7 @@ from typing import Any
 
 import pytest
 
-from spectron_openai_agents.config import MemoryScope
+from spectron_openai_agents_sdk.config import MemoryScope
 
 
 def _keywords(text: str) -> set[str]:

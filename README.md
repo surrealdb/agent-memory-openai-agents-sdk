@@ -26,7 +26,7 @@ Both talk to Spectron through a single `SpectronClient`, scoped by a `MemoryScop
 ## Installation
 
 ```bash
-pip install spectron-openai-agents
+pip install spectron-openai-agents-sdk
 ```
 
 This pulls in the Spectron SDK (`surrealdb[spectron]`), which the integration
@@ -48,7 +48,7 @@ export SPECTRON_TOKEN="your-token"   # optional for local, unsecured instances
 
 ```python
 from agents import Agent, Runner
-from spectron_openai_agents import get_spectron_tools
+from spectron_openai_agents_sdk import get_spectron_tools
 
 agent = Agent(
     name="assistant",
@@ -73,7 +73,7 @@ print(result.final_output)
 ```python
 import asyncio
 from agents import Agent
-from spectron_openai_agents import MemoryScope, run_with_memory
+from spectron_openai_agents_sdk import MemoryScope, run_with_memory
 
 agent = Agent(name="assistant", instructions="You are a helpful assistant.")
 scope = MemoryScope(session_id="user-123")
@@ -93,7 +93,7 @@ To save an agent's output while running it yourself, attach `SpectronMemoryHooks
 
 ```python
 from agents import Runner
-from spectron_openai_agents import SpectronClient, SpectronMemoryHooks, MemoryScope
+from spectron_openai_agents_sdk import SpectronClient, SpectronMemoryHooks, MemoryScope
 
 client = SpectronClient.from_env()
 hooks = SpectronMemoryHooks(client, MemoryScope(session_id="user-123"))
@@ -130,7 +130,7 @@ Runnable scripts live in [`examples/`](examples/):
 
 The Spectron SDK is imported lazily, only when a client is built from settings or the
 environment. If the released SDK exposes different client method names or a different constructor,
-`src/spectron_openai_agents/client.py` is the single place to adjust; the tools, hooks, and
+`src/spectron_openai_agents_sdk/client.py` is the single place to adjust; the tools, hooks, and
 examples do not change.
 
 ## License

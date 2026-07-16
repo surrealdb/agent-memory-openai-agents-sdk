@@ -3,7 +3,7 @@ requires = ["hatchling"]
 build-backend = "hatchling.build"
 
 [project]
-name = "spectron-openai-agents"
+name = "spectron-openai-agents-sdk"
 version = "0.1.0"
 description = "Spectron agent memory for the OpenAI Agents SDK"
 readme = "README.md"
@@ -28,11 +28,12 @@ classifiers = [
     "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
     "Topic :: Software Development :: Libraries :: Python Modules",
 ]
 dependencies = [
     "openai-agents>=0.0.1",
-    "surrealdb[spectron]",
+    "surrealdb[spectron]>=3.0.0a1",
 ]
 
 [project.optional-dependencies]
@@ -47,7 +48,7 @@ Documentation = "https://surrealdb.com/docs/learn/spectron"
 Repository = "https://github.com/surrealdb-dev/spectron-openai-agents-sdk"
 
 [tool.hatch.build.targets.wheel]
-packages = ["src/spectron_openai_agents"]
+packages = ["src/spectron_openai_agents_sdk"]
 
 [tool.pytest.ini_options]
 asyncio_mode = "auto"

@@ -5,12 +5,12 @@ from __future__ import annotations
 from types import SimpleNamespace
 from typing import Any
 
-from spectron_openai_agents import (
+from spectron_openai_agents_sdk import (
     MemoryScope,
     SpectronMemoryHooks,
     run_with_memory,
 )
-from spectron_openai_agents.hooks import MEMORY_CONTEXT_HEADER
+from spectron_openai_agents_sdk.hooks import MEMORY_CONTEXT_HEADER
 
 
 class FakeRunner:

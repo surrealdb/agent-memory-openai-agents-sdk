@@ -4,7 +4,7 @@ Use :func:`get_spectron_tools` to build a list of tools bound to a client and a
 memory scope, then pass them to an ``Agent``:
 
     from agents import Agent
-    from spectron_openai_agents import get_spectron_tools
+    from spectron_openai_agents_sdk import get_spectron_tools
 
     agent = Agent(
         name="assistant",

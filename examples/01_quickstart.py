@@ -14,7 +14,7 @@ Run it with:
 
 from agents import Agent, Runner
 
-from spectron_openai_agents import get_spectron_tools
+from spectron_openai_agents_sdk import get_spectron_tools
 
 
 def main() -> None:

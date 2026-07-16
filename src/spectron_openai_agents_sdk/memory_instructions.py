@@ -7,7 +7,7 @@ scope without the caller wiring anything up per turn.
 
 The callable does not have access to the run input, so it injects a general
 memory summary rather than a query-targeted one. For recall aimed at a specific
-message, use :func:`spectron_openai_agents.run_with_memory` instead.
+message, use :func:`spectron_openai_agents_sdk.run_with_memory` instead.
 """
 
 from __future__ import annotations

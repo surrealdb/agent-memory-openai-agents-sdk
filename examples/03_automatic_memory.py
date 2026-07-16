@@ -17,7 +17,7 @@ import asyncio
 
 from agents import Agent
 
-from spectron_openai_agents import MemoryScope, run_with_memory
+from spectron_openai_agents_sdk import MemoryScope, run_with_memory
 
 
 async def main() -> None:

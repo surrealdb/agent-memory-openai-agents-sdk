@@ -8,7 +8,7 @@ import pytest
 from agents.run_context import RunContextWrapper
 from agents.tool_context import ToolContext
 
-from spectron_openai_agents import DEFAULT_OPERATIONS, get_spectron_tools
+from spectron_openai_agents_sdk import DEFAULT_OPERATIONS, get_spectron_tools
 
 
 def _tool_context() -> ToolContext:
