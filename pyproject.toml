@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "spectron-openai-agents-sdk"
-version = "0.1.0"
+version = "0.1.1"
 description = "Spectron agent memory for the OpenAI Agents SDK"
 readme = "README.md"
 requires-python = ">=3.10"
@@ -33,7 +33,7 @@ classifiers = [
 ]
 dependencies = [
     "openai-agents>=0.0.1",
-    "surrealdb[spectron]>=3.0.0a1",
+    "surrealdb>=3.0.0a1",
 ]
 
 [project.optional-dependencies]

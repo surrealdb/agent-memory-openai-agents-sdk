@@ -36,15 +36,15 @@ class FakeSpectronClient:
         content: str,
         scope: MemoryScope | None = None,
         *,
-        metadata: dict[str, Any] | None = None,
-        memory_type: str | None = None,
+        memory_category: str | None = None,
+        labels: list[str] | None = None,
     ) -> str:
         self.stored.append(
             {
                 "content": content,
                 "scope": scope,
-                "metadata": metadata,
-                "memory_type": memory_type,
+                "memory_category": memory_category,
+                "labels": labels,
             }
         )
         return "Stored in memory."
@@ -54,7 +54,7 @@ class FakeSpectronClient:
         query: str,
         scope: MemoryScope | None = None,
         *,
-        limit: int = 5,
+        limit: int | None = None,
     ) -> str:
         terms = _keywords(query)
         matches = [
@@ -62,20 +62,22 @@ class FakeSpectronClient:
             for item in self.stored
             if item["scope"] == scope and terms & _keywords(item["content"])
         ]
-        return "\n".join(matches[:limit])
+        return "\n".join(matches[: limit or len(matches)])
 
     async def context(self, query: str, scope: MemoryScope | None = None) -> str:
-        recalled = await self.recall(query, scope, limit=100)
+        recalled = await self.recall(query, scope)
         return f"Context for '{query}':\n{recalled}" if recalled else ""
 
     async def reflect(
-        self, scope: MemoryScope | None = None, *, focus: str | None = None
+        self, query: str, scope: MemoryScope | None = None, *, persist: bool = False
     ) -> str:
         items = [item["content"] for item in self.stored if item["scope"] == scope]
         return "; ".join(items)
 
-    async def forget(self, target: str, scope: MemoryScope | None = None) -> str:
-        self.forgotten.append({"target": target, "scope": scope})
+    async def forget(
+        self, query: str, scope: MemoryScope | None = None, *, purge: bool = False
+    ) -> str:
+        self.forgotten.append({"query": query, "scope": scope, "purge": purge})
         return "Removed from memory."
 
 

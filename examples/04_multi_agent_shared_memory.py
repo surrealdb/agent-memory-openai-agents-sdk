@@ -6,8 +6,8 @@ the same MemoryScope, knowledge stored by one is available to the other.
 
 Required environment variables:
     OPENAI_API_KEY
-    SPECTRON_URL, SPECTRON_NAMESPACE, SPECTRON_DATABASE
-    SPECTRON_TOKEN (optional)
+    SPECTRON_ENDPOINT, SPECTRON_CONTEXT
+    SPECTRON_API_KEY (optional)
 
 Run it with:
     python examples/04_multi_agent_shared_memory.py

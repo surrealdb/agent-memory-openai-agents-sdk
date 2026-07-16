@@ -1,21 +1,24 @@
-"""Adapter around the official Spectron SDK (``surrealdb[spectron]``).
+"""Adapter around the official Spectron SDK (``surrealdb`` 3.x).
 
 This is the only module in the package that imports the Spectron SDK. Every
 other module (tools, hooks, instructions) talks to Spectron through the
-``SpectronClient`` surface defined here. If the released SDK exposes different
-method names or constructor arguments, this file is the single place to update
-and the rest of the package is unaffected.
+``SpectronClient`` surface defined here, so a change in the SDK only affects
+this file.
 
-The five operations mirror Spectron's own vocabulary:
+The SDK ships two clients, ``Spectron`` (blocking) and ``AsyncSpectron``. Both
+expose the same operations. This adapter builds the async client by default and
+awaits its methods, presenting a uniform async surface. The five operations map
+onto SDK methods as follows:
 
-- ``remember`` writes content into memory.
-- ``recall`` searches memory for content relevant to a query.
-- ``context`` assembles a ready-to-use context block for a query.
-- ``reflect`` runs a synthesis pass over stored memory.
-- ``forget`` removes matching memory.
+- ``remember`` -> ``remember``
+- ``recall``   -> ``recall``
+- ``context``  -> ``query_context``
+- ``reflect``  -> ``reflect``
+- ``forget``   -> ``forget``
 
-All methods are async and return plain strings so their output can be handed
-straight back to a language model.
+Scope is applied per call: ``session_id`` maps to the SDK ``session_id``,
+``user_id`` maps to ``on_behalf_of``, and ``agent_id`` maps to ``scopes`` on
+writes and ``lens`` on reads.
 """
 
 from __future__ import annotations
@@ -30,9 +33,8 @@ from .config import MemoryScope, SpectronSettings
 async def _resolve(value: Any) -> Any:
     """Await ``value`` when it is awaitable, otherwise return it as is.
 
-    The Spectron SDK may expose sync or async methods depending on version and
-    transport. Resolving here lets ``SpectronClient`` present a uniform async
-    surface regardless.
+    Lets ``SpectronClient`` wrap either ``AsyncSpectron`` (async methods) or
+    ``Spectron`` (blocking methods) without changing its own async surface.
     """
     if inspect.isawaitable(value):
         return await value
@@ -40,7 +42,7 @@ async def _resolve(value: Any) -> Any:
 
 
 def _stringify(result: Any) -> str:
-    """Normalize an arbitrary SDK return value into a string for a model."""
+    """Normalize an arbitrary value into a string for a model."""
     if result is None:
         return ""
     if isinstance(result, str):
@@ -49,6 +51,28 @@ def _stringify(result: Any) -> str:
         return json.dumps(result, default=str, ensure_ascii=False)
     except (TypeError, ValueError):
         return str(result)
+
+
+def _field(obj: Any, name: str) -> Any:
+    """Read ``name`` from an object attribute or a dict key."""
+    if isinstance(obj, dict):
+        return obj.get(name)
+    return getattr(obj, name, None)
+
+
+def _render_hits(hits: Any) -> str:
+    """Render a recall response's hits into newline-separated text."""
+    if not hits:
+        return ""
+    lines: list[str] = []
+    for hit in hits:
+        text = None
+        for key in ("text", "content", "preview", "snippet", "summary"):
+            text = _field(hit, key)
+            if text:
+                break
+        lines.append(str(text) if text else _stringify(hit))
+    return "\n".join(line for line in lines if line)
 
 
 class SpectronClient:
@@ -75,7 +99,7 @@ class SpectronClient:
     # ------------------------------------------------------------------
     @classmethod
     def from_sdk(cls, sdk_client: Any) -> "SpectronClient":
-        """Wrap an SDK client that the caller has already configured."""
+        """Wrap an SDK client (``AsyncSpectron`` or ``Spectron``) directly."""
         return cls(sdk_client)
 
     @classmethod
@@ -96,51 +120,52 @@ class SpectronClient:
         content: str,
         scope: MemoryScope | None = None,
         *,
-        metadata: dict[str, Any] | None = None,
-        memory_type: str | None = None,
+        memory_category: str | None = None,
+        labels: list[str] | None = None,
     ) -> str:
         """Write ``content`` into Spectron memory.
 
         Args:
             content: The text to store.
             scope: Memory partition to write to.
-            metadata: Optional structured metadata to attach.
-            memory_type: Optional Spectron memory type, for example
+            memory_category: Optional Spectron memory category, for example
                 ``"semantic"``, ``"episodic"``, or ``"preference"``.
+            labels: Optional labels to attach to the stored memory.
 
         Returns:
             A short confirmation string describing what was stored.
         """
-        kwargs: dict[str, Any] = self._scope_kwargs(scope)
-        if metadata is not None:
-            kwargs["metadata"] = metadata
-        if memory_type is not None:
-            kwargs["memory_type"] = memory_type
+        kwargs = self._write_scope(scope)
+        if memory_category is not None:
+            kwargs["memory_category"] = memory_category
+        if labels is not None:
+            kwargs["labels"] = labels
         result = await _resolve(self._sdk.remember(content, **kwargs))
-        return _stringify(result) or "Stored in memory."
+        return _stringify(_field(result, "preview")) or "Stored in memory."
 
     async def recall(
         self,
         query: str,
         scope: MemoryScope | None = None,
         *,
-        limit: int = 5,
+        limit: int | None = None,
     ) -> str:
         """Search memory for content relevant to ``query``.
 
         Args:
             query: What to look for.
             scope: Memory partition to search.
-            limit: Maximum number of memories to return.
+            limit: Maximum number of memories to return (the SDK ``k``).
 
         Returns:
             The matching memories rendered as text, or an empty string when
             nothing matches.
         """
-        kwargs = self._scope_kwargs(scope)
-        kwargs["limit"] = limit
+        kwargs = self._read_scope(scope)
+        if limit is not None:
+            kwargs["k"] = limit
         result = await _resolve(self._sdk.recall(query, **kwargs))
-        return _stringify(result)
+        return _render_hits(_field(result, "hits"))
 
     async def context(
         self,
@@ -149,84 +174,116 @@ class SpectronClient:
     ) -> str:
         """Assemble a context block for ``query`` from stored memory.
 
-        Where ``recall`` returns individual matches, ``context`` returns a
-        single block Spectron has already ranked and stitched together for use
-        in a prompt.
+        Backed by the SDK ``query_context`` method. Where ``recall`` returns
+        individual matches, this returns a single block Spectron has already
+        ranked and stitched together for use in a prompt.
         """
-        kwargs = self._scope_kwargs(scope)
-        result = await _resolve(self._sdk.context(query, **kwargs))
-        return _stringify(result)
+        kwargs = self._read_scope(scope, include_session=False)
+        result = await _resolve(self._sdk.query_context(query, **kwargs))
+        return _stringify(_field(result, "context"))
 
     async def reflect(
         self,
+        query: str,
         scope: MemoryScope | None = None,
         *,
-        focus: str | None = None,
+        persist: bool = False,
     ) -> str:
-        """Run a synthesis pass over stored memory.
+        """Run a synthesis pass over stored memory relevant to ``query``.
 
         Args:
+            query: The topic to reflect on.
             scope: Memory partition to reflect over.
-            focus: Optional topic to steer the synthesis toward.
+            persist: Store the resulting attributes back into memory.
 
         Returns:
-            The synthesized summary as text.
+            The synthesized reflection as text.
         """
-        kwargs = self._scope_kwargs(scope)
-        if focus is not None:
-            kwargs["focus"] = focus
-        result = await _resolve(self._sdk.reflect(**kwargs))
-        return _stringify(result)
+        kwargs = self._principal_scope(scope)
+        result = await _resolve(self._sdk.reflect(query, persist=persist, **kwargs))
+        return _stringify(_field(result, "reflection"))
 
     async def forget(
         self,
-        target: str,
+        query: str,
         scope: MemoryScope | None = None,
+        *,
+        purge: bool = False,
     ) -> str:
-        """Remove memory matching ``target``.
+        """Remove memory matching ``query``.
 
         Args:
-            target: A description or identifier of what to remove.
+            query: A description of what to remove.
             scope: Memory partition to remove from.
+            purge: Permanently purge rather than soft-delete.
 
         Returns:
             A short confirmation string.
         """
-        kwargs = self._scope_kwargs(scope)
-        result = await _resolve(self._sdk.forget(target, **kwargs))
-        return _stringify(result) or "Removed from memory."
+        kwargs = self._principal_scope(scope)
+        result = await _resolve(self._sdk.forget(query, purge=purge, **kwargs))
+        deleted = _field(result, "deleted")
+        if isinstance(deleted, (list, tuple, set)):
+            return f"Removed {len(deleted)} item(s) from memory."
+        if isinstance(deleted, int):
+            return f"Removed {deleted} item(s) from memory."
+        return "Removed from memory."
+
+    async def close(self) -> None:
+        """Close the underlying SDK client if it supports it."""
+        close = getattr(self._sdk, "close", None)
+        if close is not None:
+            await _resolve(close())
 
     # ------------------------------------------------------------------
-    # Internals
+    # Scope mapping
     # ------------------------------------------------------------------
     @staticmethod
-    def _scope_kwargs(scope: MemoryScope | None) -> dict[str, Any]:
-        """Turn a scope into keyword arguments for an SDK call."""
-        if scope is None:
-            return {}
-        return dict(scope.as_dict())
+    def _principal_scope(scope: MemoryScope | None) -> dict[str, Any]:
+        """Scope arguments accepted by every operation."""
+        kwargs: dict[str, Any] = {}
+        if scope and scope.user_id:
+            kwargs["on_behalf_of"] = scope.user_id
+        return kwargs
+
+    def _write_scope(self, scope: MemoryScope | None) -> dict[str, Any]:
+        """Scope arguments for writes (remember): session and scopes."""
+        kwargs = self._principal_scope(scope)
+        if scope and scope.session_id:
+            kwargs["session_id"] = scope.session_id
+        if scope and scope.agent_id:
+            kwargs["scopes"] = scope.agent_id
+        return kwargs
+
+    def _read_scope(
+        self, scope: MemoryScope | None, *, include_session: bool = True
+    ) -> dict[str, Any]:
+        """Scope arguments for reads (recall, context): lens and session."""
+        kwargs = self._principal_scope(scope)
+        if include_session and scope and scope.session_id:
+            kwargs["session_id"] = scope.session_id
+        if scope and scope.agent_id:
+            kwargs["lens"] = scope.agent_id
+        return kwargs
 
 
 def _build_sdk_client(settings: SpectronSettings) -> Any:
     """Construct the underlying Spectron SDK client from settings.
 
-    This is the second half of the isolation boundary. It assumes the Spectron
-    extra exposes a ``Spectron`` client importable from the ``surrealdb``
-    package that accepts a URL, namespace, database, and optional token. Adjust
-    this function to match the released SDK if the entry point differs.
+    Uses ``AsyncSpectron`` so the adapter can await its methods. The client is
+    created but does not open a connection until an operation runs.
     """
     try:
-        from surrealdb import Spectron  # type: ignore
+        from surrealdb import AsyncSpectron
     except ImportError as exc:  # pragma: no cover - exercised only without the SDK
         raise ImportError(
             "The Spectron SDK is required to build a client from settings. "
-            "Install it with `pip install surrealdb[spectron]`, or pass an "
+            "Install it with `pip install surrealdb`, or pass an "
             "already-constructed SDK client to SpectronClient.from_sdk()."
         ) from exc
 
-    return Spectron(
-        settings.url,
-        namespace=settings.namespace,
-        database=settings.database,
-        token=settings.token,
+    return AsyncSpectron(
+        settings.context,
+        endpoint=settings.endpoint,
+        api_key=settings.api_key,
     )

@@ -5,10 +5,9 @@ OpenAI API key set in the environment:
 
 ```bash
 export OPENAI_API_KEY="your-openai-api-key"
-export SPECTRON_URL="https://your-spectron-endpoint"
-export SPECTRON_NAMESPACE="your-namespace"
-export SPECTRON_DATABASE="your-database"
-export SPECTRON_TOKEN="your-token"   # optional for local instances
+export SPECTRON_ENDPOINT="https://your-spectron-endpoint"
+export SPECTRON_CONTEXT="your-memory-context"
+export SPECTRON_API_KEY="your-api-key"   # optional for local instances
 ```
 
 Install the package before running them:

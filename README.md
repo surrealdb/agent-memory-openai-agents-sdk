@@ -29,17 +29,16 @@ Both talk to Spectron through a single `SpectronClient`, scoped by a `MemoryScop
 pip install spectron-openai-agents-sdk
 ```
 
-This pulls in the Spectron SDK (`surrealdb[spectron]`), which the integration
+This pulls in the Spectron SDK (`surrealdb`), which the integration
 uses to reach a deployment.
 
 Set the connection and model credentials:
 
 ```bash
 export OPENAI_API_KEY="your-openai-api-key"
-export SPECTRON_URL="https://your-spectron-endpoint"
-export SPECTRON_NAMESPACE="your-namespace"
-export SPECTRON_DATABASE="your-database"
-export SPECTRON_TOKEN="your-token"   # optional for local, unsecured instances
+export SPECTRON_ENDPOINT="https://your-spectron-endpoint"
+export SPECTRON_CONTEXT="your-memory-context"
+export SPECTRON_API_KEY="your-api-key"   # optional for local, unsecured instances
 ```
 
 ## Usage
@@ -128,10 +127,15 @@ Runnable scripts live in [`examples/`](examples/):
 
 ## Configuration notes
 
-The Spectron SDK is imported lazily, only when a client is built from settings or the
-environment. If the released SDK exposes different client method names or a different constructor,
-`src/spectron_openai_agents_sdk/client.py` is the single place to adjust; the tools, hooks, and
-examples do not change.
+This integration targets the Spectron client in `surrealdb` 3.x, which exposes `Spectron` and
+`AsyncSpectron`. The SDK is imported lazily, only when a client is built from settings or the
+environment, and all SDK calls live in `src/spectron_openai_agents_sdk/client.py`. If a future SDK
+release changes a method name or constructor argument, that file is the single place to adjust; the
+tools, hooks, and examples do not change.
+
+The five operations map onto SDK methods as `remember`, `recall`, `context` (the SDK's
+`query_context`), `reflect`, and `forget`. Scope is applied per call: `session_id` maps to the SDK
+`session_id`, `user_id` to `on_behalf_of`, and `agent_id` to `scopes` on writes and `lens` on reads.
 
 ## License
 

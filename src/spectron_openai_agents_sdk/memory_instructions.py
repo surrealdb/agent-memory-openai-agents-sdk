@@ -27,20 +27,24 @@ def memory_instructions(
     client: SpectronClient,
     scope: MemoryScope | None = None,
     *,
-    focus: str | None = None,
+    focus: str,
 ) -> InstructionsFn:
     """Build a dynamic ``instructions`` callable that prepends stored memory.
 
-    The returned callable recalls a memory summary for ``scope`` and appends it
-    to ``base_instructions`` under a "What you remember" heading. When there is
-    nothing to recall, the base instructions are returned unchanged.
+    The returned callable builds a context block for ``focus`` within ``scope``
+    and appends it to ``base_instructions`` under a "What you remember" heading.
+    When there is nothing to inject, the base instructions are returned
+    unchanged.
+
+    The callable does not have access to the run input, so ``focus`` fixes the
+    topic to summarize. For recall aimed at a specific message, use
+    :func:`spectron_openai_agents_sdk.run_with_memory` instead.
 
     Args:
         base_instructions: The agent's normal system prompt.
         client: The Spectron client to read memory from.
         scope: Memory partition to summarize.
-        focus: Optional topic. When set, a context block for that topic is
-            injected. When unset, a reflection over all memory in scope is used.
+        focus: The topic to build a context block for.
 
     Returns:
         An async callable suitable for ``Agent(instructions=...)``.
@@ -48,10 +52,7 @@ def memory_instructions(
     resolved_scope = scope or MemoryScope()
 
     async def _instructions(run_context: Any, agent: Any) -> str:
-        if focus is not None:
-            memory = await client.context(focus, resolved_scope)
-        else:
-            memory = await client.reflect(resolved_scope)
+        memory = await client.context(focus, resolved_scope)
         if not memory:
             return base_instructions
         return f"{base_instructions}\n\n{MEMORY_HEADER}\n{memory}"

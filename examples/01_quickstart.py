@@ -5,8 +5,8 @@ fact. The second run, with no reminder in the prompt, recalls it from memory.
 
 Required environment variables:
     OPENAI_API_KEY
-    SPECTRON_URL, SPECTRON_NAMESPACE, SPECTRON_DATABASE
-    SPECTRON_TOKEN (optional)
+    SPECTRON_ENDPOINT, SPECTRON_CONTEXT
+    SPECTRON_API_KEY (optional)
 
 Run it with:
     python examples/01_quickstart.py

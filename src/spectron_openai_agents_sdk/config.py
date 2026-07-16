@@ -3,8 +3,8 @@
 This module holds two small, dependency-free pieces of state:
 
 - ``MemoryScope`` identifies which slice of memory an operation reads from or
-  writes to. Spectron partitions memory by agent, session, and user, so the
-  same scope is threaded through every call the integration makes.
+  writes to. It is threaded through every call the integration makes and mapped
+  onto the SDK's scoping arguments in ``client.py``.
 - ``SpectronSettings`` collects the connection details needed to reach a
   Spectron deployment, with a helper to load them from environment variables.
 """
@@ -19,14 +19,18 @@ from dataclasses import asdict, dataclass
 class MemoryScope:
     """Identifies the slice of Spectron memory an operation applies to.
 
-    All fields are optional. A scope with no fields set targets the default
-    memory partition for the connected namespace and database. Setting
-    ``session_id`` keeps a single conversation isolated, while a shared
-    ``agent_id`` or ``user_id`` lets several sessions or agents read and write
-    the same memory.
+    All fields are optional. A scope with no fields set targets the whole
+    memory context the client is connected to. The fields map onto the SDK's
+    scoping arguments in ``client.py``:
+
+    - ``session_id`` maps to the SDK ``session_id`` and keeps a single
+      conversation isolated.
+    - ``user_id`` maps to ``on_behalf_of``, the principal the memory is for.
+    - ``agent_id`` maps to ``scopes`` on writes and ``lens`` on reads, so
+      several agents can partition or share a slice of memory.
 
     Attributes:
-        agent_id: Identifier for the agent that owns or shares the memory.
+        agent_id: Identifier used as the write scope and read lens.
         session_id: Identifier for a single conversation or run.
         user_id: Identifier for the end user the memory belongs to.
     """
@@ -49,26 +53,26 @@ class SpectronSettings:
     """Connection details for a Spectron deployment.
 
     Attributes:
-        url: Base URL of the Spectron endpoint, for example
+        endpoint: Base URL of the Spectron endpoint, for example
             ``https://cloud.surrealdb.com`` or ``http://localhost:8000``.
-        namespace: SurrealDB namespace that holds the memory tables.
-        database: SurrealDB database that holds the memory tables.
-        token: Bearer token or API key used to authenticate. Optional for
-            local development against an unsecured instance.
+        context: The Spectron memory context to operate in. This is the
+            top-level partition the client is bound to.
+        api_key: API key used to authenticate. Optional for local development
+            against an unsecured instance.
     """
 
-    url: str
-    namespace: str
-    database: str
-    token: str | None = None
+    endpoint: str
+    context: str
+    api_key: str | None = None
 
     @classmethod
     def from_env(cls, environ: dict[str, str] | None = None) -> "SpectronSettings":
         """Build settings from environment variables.
 
-        Reads ``SPECTRON_URL``, ``SPECTRON_NAMESPACE``, ``SPECTRON_DATABASE``,
-        and the optional ``SPECTRON_TOKEN``. The OpenAI Agents SDK reads
-        ``OPENAI_API_KEY`` on its own, so it is not handled here.
+        Reads ``SPECTRON_ENDPOINT`` (``SPECTRON_URL`` is accepted as an alias),
+        ``SPECTRON_CONTEXT``, and the optional ``SPECTRON_API_KEY``
+        (``SPECTRON_TOKEN`` is accepted as an alias). The OpenAI Agents SDK
+        reads ``OPENAI_API_KEY`` on its own, so it is not handled here.
 
         Args:
             environ: Mapping to read from. Defaults to ``os.environ``.
@@ -80,20 +84,19 @@ class SpectronSettings:
             ValueError: If any required variable is missing.
         """
         env = os.environ if environ is None else environ
-        missing = [
-            name
-            for name in ("SPECTRON_URL", "SPECTRON_NAMESPACE", "SPECTRON_DATABASE")
-            if not env.get(name)
-        ]
+        endpoint = env.get("SPECTRON_ENDPOINT") or env.get("SPECTRON_URL")
+        context = env.get("SPECTRON_CONTEXT")
+        api_key = env.get("SPECTRON_API_KEY") or env.get("SPECTRON_TOKEN")
+
+        missing: list[str] = []
+        if not endpoint:
+            missing.append("SPECTRON_ENDPOINT")
+        if not context:
+            missing.append("SPECTRON_CONTEXT")
         if missing:
             raise ValueError(
                 "Missing required Spectron environment variables: "
                 + ", ".join(missing)
                 + ". Set them or pass a SpectronClient explicitly."
             )
-        return cls(
-            url=env["SPECTRON_URL"],
-            namespace=env["SPECTRON_NAMESPACE"],
-            database=env["SPECTRON_DATABASE"],
-            token=env.get("SPECTRON_TOKEN"),
-        )
+        return cls(endpoint=endpoint, context=context, api_key=api_key)

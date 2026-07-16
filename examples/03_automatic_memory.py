@@ -6,8 +6,8 @@ output afterward. Memory works without the agent knowing anything about it.
 
 Required environment variables:
     OPENAI_API_KEY
-    SPECTRON_URL, SPECTRON_NAMESPACE, SPECTRON_DATABASE
-    SPECTRON_TOKEN (optional)
+    SPECTRON_ENDPOINT, SPECTRON_CONTEXT
+    SPECTRON_API_KEY (optional)
 
 Run it with:
     python examples/03_automatic_memory.py

@@ -49,7 +49,7 @@ def _get_default_client() -> SpectronClient:
 
 def _remember_tool(client: SpectronClient, scope: MemoryScope) -> FunctionTool:
     @function_tool(name_override="remember")
-    async def remember(content: str, memory_type: str | None = None) -> str:
+    async def remember(content: str, memory_category: str | None = None) -> str:
         """Store a fact, preference, or event in long-term memory.
 
         Call this whenever the user shares something worth keeping across turns,
@@ -57,10 +57,10 @@ def _remember_tool(client: SpectronClient, scope: MemoryScope) -> FunctionTool:
 
         Args:
             content: The information to store, written as a clear statement.
-            memory_type: Optional category, for example "semantic",
+            memory_category: Optional category, for example "semantic",
                 "episodic", or "preference". Leave unset to let Spectron decide.
         """
-        return await client.remember(content, scope, memory_type=memory_type)
+        return await client.remember(content, scope, memory_category=memory_category)
 
     return remember
 
@@ -100,32 +100,32 @@ def _context_tool(client: SpectronClient, scope: MemoryScope) -> FunctionTool:
 
 def _reflect_tool(client: SpectronClient, scope: MemoryScope) -> FunctionTool:
     @function_tool(name_override="reflect")
-    async def reflect(focus: str | None = None) -> str:
+    async def reflect(query: str) -> str:
         """Synthesize stored memory into a higher-level summary.
 
-        Use this to consolidate what is known so far, optionally narrowed to a
-        topic.
+        Use this to consolidate what is known about a topic into a single
+        summary, drawing across many stored memories.
 
         Args:
-            focus: Optional topic to steer the synthesis toward.
+            query: The topic to reflect on.
         """
-        return await client.reflect(scope, focus=focus)
+        return await client.reflect(query, scope)
 
     return reflect
 
 
 def _forget_tool(client: SpectronClient, scope: MemoryScope) -> FunctionTool:
     @function_tool(name_override="forget")
-    async def forget(target: str) -> str:
+    async def forget(query: str) -> str:
         """Remove information from long-term memory.
 
         Call this when the user asks to delete or correct something previously
         stored.
 
         Args:
-            target: A description or identifier of what to remove.
+            query: A description of what to remove.
         """
-        return await client.forget(target, scope)
+        return await client.forget(query, scope)
 
     return forget
 

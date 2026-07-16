@@ -67,7 +67,7 @@ class SpectronMemoryHooks(RunHooks):
             await self._client.remember(
                 f"Assistant response: {text}",
                 self._scope,
-                memory_type="episodic",
+                memory_category="episodic",
             )
 
     async def on_tool_end(
@@ -82,7 +82,7 @@ class SpectronMemoryHooks(RunHooks):
             await self._client.remember(
                 f"Result of {tool_name}: {text}",
                 self._scope,
-                memory_type="episodic",
+                memory_category="episodic",
             )
 
 
@@ -145,7 +145,7 @@ async def run_with_memory(
         await resolved_client.remember(
             f"User said: {query}",
             resolved_scope,
-            memory_type="episodic",
+            memory_category="episodic",
         )
 
     run_input = _inject_memory(input, memory)
@@ -157,7 +157,7 @@ async def run_with_memory(
             await resolved_client.remember(
                 f"Assistant response: {output_text}",
                 resolved_scope,
-                memory_type="episodic",
+                memory_category="episodic",
             )
 
     return result
