@@ -1,6 +1,6 @@
 # Examples
 
-Each script is runnable on its own. They need a working AgentMemory endpoint and an
+Each script is runnable on its own. They need a working Agent Memory endpoint and an
 OpenAI API key set in the environment:
 
 ```bash

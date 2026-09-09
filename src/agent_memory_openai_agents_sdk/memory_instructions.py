@@ -1,4 +1,4 @@
-"""Inject AgentMemory memory into an agent's system prompt.
+"""Inject Agent Memory into an agent's system prompt.
 
 The OpenAI Agents SDK lets ``Agent(instructions=...)`` be a callable that builds
 the system prompt at run time. :func:`memory_instructions` returns such a
@@ -42,7 +42,7 @@ def memory_instructions(
 
     Args:
         base_instructions: The agent's normal system prompt.
-        client: The AgentMemory client to read memory from.
+        client: The Agent Memory client to read memory from.
         scope: Memory partition to summarize.
         focus: The topic to build a context block for.
 

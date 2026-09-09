@@ -5,7 +5,7 @@ build-backend = "hatchling.build"
 [project]
 name = "agent-memory-openai-agents-sdk"
 version = "0.2.0"
-description = "AgentMemory agent memory for the OpenAI Agents SDK"
+description = "Agent Memory for the OpenAI Agents SDK"
 readme = "README.md"
 requires-python = ">=3.10"
 license = "Apache-2.0"
@@ -13,7 +13,7 @@ license-files = ["LICENSE"]
 authors = [{ name = "SurrealDB", email = "hello@surrealdb.com" }]
 keywords = [
     "surrealdb",
-    "agent_memory",
+    "agent-memory",
     "openai",
     "agents",
     "memory",
@@ -44,7 +44,7 @@ dev = [
 
 [project.urls]
 Homepage = "https://surrealdb.com/agent-memory"
-Documentation = "https://surrealdb.com/docs/learn/agent_memory"
+Documentation = "https://surrealdb.com/docs/agent-memory"
 Repository = "https://github.com/surrealdb/agent-memory-openai-agents-sdk"
 
 [tool.hatch.build.targets.wheel]

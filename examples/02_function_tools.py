@@ -1,4 +1,4 @@
-"""Exercise the full AgentMemory tool set from a single agent.
+"""Exercise the full Agent Memory tool set from a single agent.
 
 This gives the agent every memory operation (remember, recall, context,
 reflect, forget) and sends a sequence of prompts that lead it to choose the

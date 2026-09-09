@@ -1,6 +1,6 @@
 """Shared test fixtures.
 
-The ``FakeAgentMemoryClient`` stands in for a real AgentMemory deployment so the tests
+The ``FakeAgentMemoryClient`` stands in for a real Agent Memory deployment so the tests
 run offline. It matches the async surface of ``AgentMemoryClient`` and keeps every
 stored item in a list, scoped by the fields passed on each call.
 """

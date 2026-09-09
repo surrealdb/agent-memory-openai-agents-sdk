@@ -1,7 +1,7 @@
-"""Adapter around the official AgentMemory SDK (``surrealdb`` 3.x).
+"""Adapter around the official Agent Memory SDK (``surrealdb`` 3.x).
 
-This is the only module in the package that imports the AgentMemory SDK. Every
-other module (tools, hooks, instructions) talks to AgentMemory through the
+This is the only module in the package that imports the Agent Memory SDK. Every
+other module (tools, hooks, instructions) talks to Agent Memory through the
 ``AgentMemoryClient`` surface defined here, so a change in the SDK only affects
 this file.
 
@@ -76,7 +76,7 @@ def _render_hits(hits: Any) -> str:
 
 
 class AgentMemoryClient:
-    """Async wrapper around a AgentMemory SDK client.
+    """Async wrapper around an Agent Memory SDK client.
 
     Construct it from environment variables, from explicit settings, or from an
     SDK client you already hold:
@@ -87,7 +87,7 @@ class AgentMemoryClient:
     """
 
     def __init__(self, sdk_client: Any) -> None:
-        """Wrap an already-constructed AgentMemory SDK client.
+        """Wrap an already-constructed Agent Memory SDK client.
 
         Prefer the ``from_*`` constructors unless you have a reason to pass the
         SDK client directly.
@@ -123,12 +123,12 @@ class AgentMemoryClient:
         memory_category: str | None = None,
         labels: list[str] | None = None,
     ) -> str:
-        """Write ``content`` into AgentMemory memory.
+        """Write ``content`` into Agent Memory.
 
         Args:
             content: The text to store.
             scope: Memory partition to write to.
-            memory_category: Optional AgentMemory memory category, for example
+            memory_category: Optional Agent Memory category, for example
                 ``"semantic"``, ``"episodic"``, or ``"preference"``.
             labels: Optional labels to attach to the stored memory.
 
@@ -175,7 +175,7 @@ class AgentMemoryClient:
         """Assemble a context block for ``query`` from stored memory.
 
         Backed by the SDK ``query_context`` method. Where ``recall`` returns
-        individual matches, this returns a single block AgentMemory has already
+        individual matches, this returns a single block Agent Memory has already
         ranked and stitched together for use in a prompt.
         """
         kwargs = self._read_scope(scope, include_session=False)
@@ -268,7 +268,7 @@ class AgentMemoryClient:
 
 
 def _build_sdk_client(settings: AgentMemorySettings) -> Any:
-    """Construct the underlying AgentMemory SDK client from settings.
+    """Construct the underlying Agent Memory SDK client from settings.
 
     Uses ``AsyncMemory`` so the adapter can await its methods. The client is
     created but does not open a connection until an operation runs.

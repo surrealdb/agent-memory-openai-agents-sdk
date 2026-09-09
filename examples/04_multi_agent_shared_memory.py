@@ -1,4 +1,4 @@
-"""Two agents sharing one AgentMemory memory through a handoff.
+"""Two agents sharing one Agent Memory through a handoff.
 
 A research agent gathers facts and stores them. It then hands off to a writer
 agent that reads the same memory to produce a summary. Because both agents use

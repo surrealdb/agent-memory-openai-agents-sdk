@@ -1,4 +1,4 @@
-"""Configuration objects for the AgentMemory OpenAI Agents integration.
+"""Configuration objects for the Agent Memory OpenAI Agents integration.
 
 This module holds two small, dependency-free pieces of state:
 
@@ -6,7 +6,7 @@ This module holds two small, dependency-free pieces of state:
   writes to. It is threaded through every call the integration makes and mapped
   onto the SDK's scoping arguments in ``client.py``.
 - ``AgentMemorySettings`` collects the connection details needed to reach a
-  AgentMemory deployment, with a helper to load them from environment variables.
+  Agent Memory deployment, with a helper to load them from environment variables.
 """
 
 from __future__ import annotations
@@ -17,7 +17,7 @@ from dataclasses import asdict, dataclass
 
 @dataclass(frozen=True)
 class MemoryScope:
-    """Identifies the slice of AgentMemory memory an operation applies to.
+    """Identifies the slice of Agent Memory an operation applies to.
 
     All fields are optional. A scope with no fields set targets the whole
     memory context the client is connected to. The fields map onto the SDK's
@@ -50,12 +50,12 @@ class MemoryScope:
 
 @dataclass(frozen=True)
 class AgentMemorySettings:
-    """Connection details for a AgentMemory deployment.
+    """Connection details for an Agent Memory deployment.
 
     Attributes:
-        endpoint: Base URL of the AgentMemory endpoint, for example
+        endpoint: Base URL of the Agent Memory endpoint, for example
             ``https://cloud.surrealdb.com`` or ``http://localhost:8000``.
-        context: The AgentMemory memory context to operate in. This is the
+        context: The Agent Memory context to operate in. This is the
             top-level partition the client is bound to.
         api_key: API key used to authenticate. Optional for local development
             against an unsecured instance.
@@ -95,7 +95,7 @@ class AgentMemorySettings:
             missing.append("AGENT_MEMORY_CONTEXT")
         if missing:
             raise ValueError(
-                "Missing required AgentMemory environment variables: "
+                "Missing required Agent Memory environment variables: "
                 + ", ".join(missing)
                 + ". Set them or pass a AgentMemoryClient explicitly."
             )

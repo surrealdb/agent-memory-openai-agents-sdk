@@ -36,7 +36,7 @@ def test_include_selects_and_orders_tools(fake_client):
 
 
 def test_unknown_operation_raises(fake_client):
-    with pytest.raises(ValueError, match="Unknown AgentMemory operation"):
+    with pytest.raises(ValueError, match="Unknown Agent Memory operation"):
         get_agent_memory_tools(fake_client, include=("teleport",))
 
 

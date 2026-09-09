@@ -1,4 +1,4 @@
-"""AgentMemory memory operations exposed as OpenAI Agents function tools.
+"""Agent Memory operations exposed as OpenAI Agents function tools.
 
 Use :func:`get_agent_memory_tools` to build a list of tools bound to a client and a
 memory scope, then pass them to an ``Agent``:
@@ -58,7 +58,7 @@ def _remember_tool(client: AgentMemoryClient, scope: MemoryScope) -> FunctionToo
         Args:
             content: The information to store, written as a clear statement.
             memory_category: Optional category, for example "semantic",
-                "episodic", or "preference". Leave unset to let AgentMemory decide.
+                "episodic", or "preference". Leave unset to let Agent Memory decide.
         """
         return await client.remember(content, scope, memory_category=memory_category)
 
@@ -147,10 +147,10 @@ def get_agent_memory_tools(
     user_id: str | None = None,
     include: tuple[str, ...] = DEFAULT_OPERATIONS,
 ) -> list[FunctionTool]:
-    """Build AgentMemory memory tools bound to a client and scope.
+    """Build Agent Memory tools bound to a client and scope.
 
     Args:
-        client: The AgentMemory client to use. Defaults to a client built lazily
+        client: The Agent Memory client to use. Defaults to a client built lazily
             from ``AGENT_MEMORY_*`` environment variables.
         agent_id: Optional agent identifier for the memory scope.
         session_id: Optional session identifier for the memory scope.
@@ -167,7 +167,7 @@ def get_agent_memory_tools(
     unknown = [name for name in include if name not in _BUILDERS]
     if unknown:
         raise ValueError(
-            "Unknown AgentMemory operation(s): "
+            "Unknown Agent Memory operation(s): "
             + ", ".join(unknown)
             + ". Choose from: "
             + ", ".join(_BUILDERS)

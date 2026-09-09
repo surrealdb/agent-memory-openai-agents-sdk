@@ -1,6 +1,6 @@
 """Quickstart: give an agent memory tools and watch it recall across runs.
 
-The agent is created with the AgentMemory memory tools. The first run stores a
+The agent is created with the Agent Memory tools. The first run stores a
 fact. The second run, with no reminder in the prompt, recalls it from memory.
 
 Required environment variables:
@@ -32,7 +32,7 @@ def main() -> None:
     Runner.run_sync(agent, "My name is Ada and I work on databases.")
 
     # Second run: nothing in the prompt repeats the fact, so the agent has to
-    # recall it from AgentMemory.
+    # recall it from Agent Memory.
     result = Runner.run_sync(agent, "What do you know about me?")
     print(result.final_output)
 

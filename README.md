@@ -1,10 +1,10 @@
-# AgentMemory for the OpenAI Agents SDK
+# Agent Memory for the OpenAI Agents SDK
 
 Give agents built with the [OpenAI Agents SDK](https://openai.github.io/openai-agents-python/)
-a durable, shared memory backed by [AgentMemory](https://surrealdb.com/agent-memory),
+a durable, shared memory backed by [Agent Memory](https://surrealdb.com/agent-memory),
 SurrealDB's memory and knowledge layer.
 
-AgentMemory stores facts, past turns, preferences, and knowledge as a graph with temporal
+Agent Memory stores facts, past turns, preferences, and knowledge as a graph with temporal
 awareness, and lets several agents read and write the same memory. This package wires that
 into the Agents SDK so an agent can remember across runs and recall what it needs before it
 answers.
@@ -20,7 +20,7 @@ There are two ways to use memory, and they compose:
    injects it into the prompt, runs the agent, and stores the result. The agent needs no memory
    tools of its own.
 
-Both talk to AgentMemory through a single `AgentMemoryClient`, scoped by a `MemoryScope`
+Both talk to Agent Memory through a single `AgentMemoryClient`, scoped by a `MemoryScope`
 (`agent_id`, `session_id`, `user_id`).
 
 ## Installation
@@ -29,7 +29,7 @@ Both talk to AgentMemory through a single `AgentMemoryClient`, scoped by a `Memo
 pip install agent-memory-openai-agents-sdk
 ```
 
-This pulls in the AgentMemory SDK (`surrealdb`), which the integration
+This pulls in the Agent Memory SDK (`surrealdb`), which the integration
 uses to reach a deployment.
 
 Set the connection and model credentials:
@@ -88,14 +88,14 @@ asyncio.run(main())
 
 ### Persisting output with hooks
 
-To save an agent's output while running it yourself, attach `AgentMemoryMemoryHooks`:
+To save an agent's output while running it yourself, attach `AgentMemoryHooks`:
 
 ```python
 from agents import Runner
-from agent_memory_openai_agents_sdk import AgentMemoryClient, AgentMemoryMemoryHooks, MemoryScope
+from agent_memory_openai_agents_sdk import AgentMemoryClient, AgentMemoryHooks, MemoryScope
 
 client = AgentMemoryClient.from_env()
-hooks = AgentMemoryMemoryHooks(client, MemoryScope(session_id="user-123"))
+hooks = AgentMemoryHooks(client, MemoryScope(session_id="user-123"))
 
 await Runner.run(agent, "Summarize our project decisions.", hooks=hooks)
 ```
@@ -112,7 +112,7 @@ await Runner.run(agent, "Summarize our project decisions.", hooks=hooks)
 
 ## Multi-agent shared memory
 
-Agents that share a `MemoryScope` read and write the same AgentMemory memory, so knowledge one agent
+Agents that share a `MemoryScope` read and write the same Agent Memory, so knowledge one agent
 stores is available to another. See
 [`examples/04_multi_agent_shared_memory.py`](examples/04_multi_agent_shared_memory.py).
 
@@ -127,7 +127,7 @@ Runnable scripts live in [`examples/`](examples/):
 
 ## Configuration notes
 
-This integration targets the AgentMemory client in `surrealdb` 3.x, which exposes `AgentMemory` and
+This integration targets the Agent Memory client in `surrealdb` 3.x, which exposes `AgentMemory` and
 `AsyncMemory`. The SDK is imported lazily, only when a client is built from settings or the
 environment, and all SDK calls live in `src/agent_memory_openai_agents_sdk/client.py`. If a future SDK
 release changes a method name or constructor argument, that file is the single place to adjust; the
