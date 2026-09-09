@@ -1,12 +1,12 @@
-"""Configuration objects for the Spectron OpenAI Agents integration.
+"""Configuration objects for the AgentMemory OpenAI Agents integration.
 
 This module holds two small, dependency-free pieces of state:
 
 - ``MemoryScope`` identifies which slice of memory an operation reads from or
   writes to. It is threaded through every call the integration makes and mapped
   onto the SDK's scoping arguments in ``client.py``.
-- ``SpectronSettings`` collects the connection details needed to reach a
-  Spectron deployment, with a helper to load them from environment variables.
+- ``AgentMemorySettings`` collects the connection details needed to reach a
+  AgentMemory deployment, with a helper to load them from environment variables.
 """
 
 from __future__ import annotations
@@ -17,7 +17,7 @@ from dataclasses import asdict, dataclass
 
 @dataclass(frozen=True)
 class MemoryScope:
-    """Identifies the slice of Spectron memory an operation applies to.
+    """Identifies the slice of AgentMemory memory an operation applies to.
 
     All fields are optional. A scope with no fields set targets the whole
     memory context the client is connected to. The fields map onto the SDK's
@@ -49,13 +49,13 @@ class MemoryScope:
 
 
 @dataclass(frozen=True)
-class SpectronSettings:
-    """Connection details for a Spectron deployment.
+class AgentMemorySettings:
+    """Connection details for a AgentMemory deployment.
 
     Attributes:
-        endpoint: Base URL of the Spectron endpoint, for example
+        endpoint: Base URL of the AgentMemory endpoint, for example
             ``https://cloud.surrealdb.com`` or ``http://localhost:8000``.
-        context: The Spectron memory context to operate in. This is the
+        context: The AgentMemory memory context to operate in. This is the
             top-level partition the client is bound to.
         api_key: API key used to authenticate. Optional for local development
             against an unsecured instance.
@@ -66,37 +66,37 @@ class SpectronSettings:
     api_key: str | None = None
 
     @classmethod
-    def from_env(cls, environ: dict[str, str] | None = None) -> "SpectronSettings":
+    def from_env(cls, environ: dict[str, str] | None = None) -> "AgentMemorySettings":
         """Build settings from environment variables.
 
-        Reads ``SPECTRON_ENDPOINT`` (``SPECTRON_URL`` is accepted as an alias),
-        ``SPECTRON_CONTEXT``, and the optional ``SPECTRON_API_KEY``
-        (``SPECTRON_TOKEN`` is accepted as an alias). The OpenAI Agents SDK
+        Reads ``AGENT_MEMORY_ENDPOINT`` (``AGENT_MEMORY_URL`` is accepted as an alias),
+        ``AGENT_MEMORY_CONTEXT``, and the optional ``AGENT_MEMORY_API_KEY``
+        (``AGENT_MEMORY_TOKEN`` is accepted as an alias). The OpenAI Agents SDK
         reads ``OPENAI_API_KEY`` on its own, so it is not handled here.
 
         Args:
             environ: Mapping to read from. Defaults to ``os.environ``.
 
         Returns:
-            A populated ``SpectronSettings`` instance.
+            A populated ``AgentMemorySettings`` instance.
 
         Raises:
             ValueError: If any required variable is missing.
         """
         env = os.environ if environ is None else environ
-        endpoint = env.get("SPECTRON_ENDPOINT") or env.get("SPECTRON_URL")
-        context = env.get("SPECTRON_CONTEXT")
-        api_key = env.get("SPECTRON_API_KEY") or env.get("SPECTRON_TOKEN")
+        endpoint = env.get("AGENT_MEMORY_ENDPOINT") or env.get("AGENT_MEMORY_URL")
+        context = env.get("AGENT_MEMORY_CONTEXT")
+        api_key = env.get("AGENT_MEMORY_API_KEY") or env.get("AGENT_MEMORY_TOKEN")
 
         missing: list[str] = []
         if not endpoint:
-            missing.append("SPECTRON_ENDPOINT")
+            missing.append("AGENT_MEMORY_ENDPOINT")
         if not context:
-            missing.append("SPECTRON_CONTEXT")
+            missing.append("AGENT_MEMORY_CONTEXT")
         if missing:
             raise ValueError(
-                "Missing required Spectron environment variables: "
+                "Missing required AgentMemory environment variables: "
                 + ", ".join(missing)
-                + ". Set them or pass a SpectronClient explicitly."
+                + ". Set them or pass a AgentMemoryClient explicitly."
             )
         return cls(endpoint=endpoint, context=context, api_key=api_key)

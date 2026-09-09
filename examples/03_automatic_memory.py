@@ -6,8 +6,8 @@ output afterward. Memory works without the agent knowing anything about it.
 
 Required environment variables:
     OPENAI_API_KEY
-    SPECTRON_ENDPOINT, SPECTRON_CONTEXT
-    SPECTRON_API_KEY (optional)
+    AGENT_MEMORY_ENDPOINT, AGENT_MEMORY_CONTEXT
+    AGENT_MEMORY_API_KEY (optional)
 
 Run it with:
     python examples/03_automatic_memory.py
@@ -17,7 +17,7 @@ import asyncio
 
 from agents import Agent
 
-from spectron_openai_agents_sdk import MemoryScope, run_with_memory
+from agent_memory_openai_agents_sdk import MemoryScope, run_with_memory
 
 
 async def main() -> None:

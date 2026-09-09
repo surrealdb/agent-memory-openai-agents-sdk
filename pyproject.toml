@@ -3,9 +3,9 @@ requires = ["hatchling"]
 build-backend = "hatchling.build"
 
 [project]
-name = "spectron-openai-agents-sdk"
-version = "0.1.1"
-description = "Spectron agent memory for the OpenAI Agents SDK"
+name = "agent-memory-openai-agents-sdk"
+version = "0.2.0"
+description = "AgentMemory agent memory for the OpenAI Agents SDK"
 readme = "README.md"
 requires-python = ">=3.10"
 license = "Apache-2.0"
@@ -13,7 +13,7 @@ license-files = ["LICENSE"]
 authors = [{ name = "SurrealDB", email = "hello@surrealdb.com" }]
 keywords = [
     "surrealdb",
-    "spectron",
+    "agent_memory",
     "openai",
     "agents",
     "memory",
@@ -33,7 +33,7 @@ classifiers = [
 ]
 dependencies = [
     "openai-agents>=0.0.1",
-    "surrealdb>=3.0.0a1",
+    "surrealdb[memory]>=3.0.0b8",
 ]
 
 [project.optional-dependencies]
@@ -43,12 +43,12 @@ dev = [
 ]
 
 [project.urls]
-Homepage = "https://surrealdb.com/platform/spectron"
-Documentation = "https://surrealdb.com/docs/learn/spectron"
-Repository = "https://github.com/surrealdb-dev/spectron-openai-agents-sdk"
+Homepage = "https://surrealdb.com/agent-memory"
+Documentation = "https://surrealdb.com/docs/learn/agent_memory"
+Repository = "https://github.com/surrealdb/agent-memory-openai-agents-sdk"
 
 [tool.hatch.build.targets.wheel]
-packages = ["src/spectron_openai_agents_sdk"]
+packages = ["src/agent_memory_openai_agents_sdk"]
 
 [tool.pytest.ini_options]
 asyncio_mode = "auto"

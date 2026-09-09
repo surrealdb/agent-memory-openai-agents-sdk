@@ -1,16 +1,16 @@
-"""Tests for SpectronMemoryHooks and run_with_memory."""
+"""Tests for AgentMemoryMemoryHooks and run_with_memory."""
 
 from __future__ import annotations
 
 from types import SimpleNamespace
 from typing import Any
 
-from spectron_openai_agents_sdk import (
+from agent_memory_openai_agents_sdk import (
     MemoryScope,
-    SpectronMemoryHooks,
+    AgentMemoryMemoryHooks,
     run_with_memory,
 )
-from spectron_openai_agents_sdk.hooks import MEMORY_CONTEXT_HEADER
+from agent_memory_openai_agents_sdk.hooks import MEMORY_CONTEXT_HEADER
 
 
 class FakeRunner:
@@ -26,7 +26,7 @@ class FakeRunner:
 
 
 async def test_hooks_persist_agent_output(fake_client):
-    hooks = SpectronMemoryHooks(fake_client, MemoryScope(session_id="s1"))
+    hooks = AgentMemoryMemoryHooks(fake_client, MemoryScope(session_id="s1"))
 
     await hooks.on_agent_end(context=None, agent=None, output="Paris is the capital")
 
@@ -36,7 +36,7 @@ async def test_hooks_persist_agent_output(fake_client):
 
 
 async def test_hooks_skip_output_when_disabled(fake_client):
-    hooks = SpectronMemoryHooks(fake_client, persist_output=False)
+    hooks = AgentMemoryMemoryHooks(fake_client, persist_output=False)
 
     await hooks.on_agent_end(context=None, agent=None, output="ignored")
 
@@ -44,7 +44,7 @@ async def test_hooks_skip_output_when_disabled(fake_client):
 
 
 async def test_hooks_persist_tool_results_when_enabled(fake_client):
-    hooks = SpectronMemoryHooks(fake_client, persist_tool_results=True)
+    hooks = AgentMemoryMemoryHooks(fake_client, persist_tool_results=True)
     tool = SimpleNamespace(name="search")
 
     await hooks.on_tool_end(context=None, agent=None, tool=tool, result="a result")

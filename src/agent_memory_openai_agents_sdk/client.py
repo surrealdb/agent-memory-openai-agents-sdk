@@ -1,11 +1,11 @@
-"""Adapter around the official Spectron SDK (``surrealdb`` 3.x).
+"""Adapter around the official AgentMemory SDK (``surrealdb`` 3.x).
 
-This is the only module in the package that imports the Spectron SDK. Every
-other module (tools, hooks, instructions) talks to Spectron through the
-``SpectronClient`` surface defined here, so a change in the SDK only affects
+This is the only module in the package that imports the AgentMemory SDK. Every
+other module (tools, hooks, instructions) talks to AgentMemory through the
+``AgentMemoryClient`` surface defined here, so a change in the SDK only affects
 this file.
 
-The SDK ships two clients, ``Spectron`` (blocking) and ``AsyncSpectron``. Both
+The SDK ships two clients, ``Memory`` (blocking) and ``AsyncMemory``. Both
 expose the same operations. This adapter builds the async client by default and
 awaits its methods, presenting a uniform async surface. The five operations map
 onto SDK methods as follows:
@@ -27,14 +27,14 @@ import inspect
 import json
 from typing import Any
 
-from .config import MemoryScope, SpectronSettings
+from .config import MemoryScope, AgentMemorySettings
 
 
 async def _resolve(value: Any) -> Any:
     """Await ``value`` when it is awaitable, otherwise return it as is.
 
-    Lets ``SpectronClient`` wrap either ``AsyncSpectron`` (async methods) or
-    ``Spectron`` (blocking methods) without changing its own async surface.
+    Lets ``AgentMemoryClient`` wrap either ``AsyncMemory`` (async methods) or
+    ``Memory`` (blocking methods) without changing its own async surface.
     """
     if inspect.isawaitable(value):
         return await value
@@ -75,19 +75,19 @@ def _render_hits(hits: Any) -> str:
     return "\n".join(line for line in lines if line)
 
 
-class SpectronClient:
-    """Async wrapper around a Spectron SDK client.
+class AgentMemoryClient:
+    """Async wrapper around a AgentMemory SDK client.
 
     Construct it from environment variables, from explicit settings, or from an
     SDK client you already hold:
 
-        client = SpectronClient.from_env()
-        client = SpectronClient.from_settings(settings)
-        client = SpectronClient.from_sdk(existing_sdk_client)
+        client = AgentMemoryClient.from_env()
+        client = AgentMemoryClient.from_settings(settings)
+        client = AgentMemoryClient.from_sdk(existing_sdk_client)
     """
 
     def __init__(self, sdk_client: Any) -> None:
-        """Wrap an already-constructed Spectron SDK client.
+        """Wrap an already-constructed AgentMemory SDK client.
 
         Prefer the ``from_*`` constructors unless you have a reason to pass the
         SDK client directly.
@@ -98,19 +98,19 @@ class SpectronClient:
     # Construction
     # ------------------------------------------------------------------
     @classmethod
-    def from_sdk(cls, sdk_client: Any) -> "SpectronClient":
-        """Wrap an SDK client (``AsyncSpectron`` or ``Spectron``) directly."""
+    def from_sdk(cls, sdk_client: Any) -> "AgentMemoryClient":
+        """Wrap an SDK client (``AsyncMemory`` or ``Memory``) directly."""
         return cls(sdk_client)
 
     @classmethod
-    def from_settings(cls, settings: SpectronSettings) -> "SpectronClient":
+    def from_settings(cls, settings: AgentMemorySettings) -> "AgentMemoryClient":
         """Build a client from explicit connection settings."""
         return cls(_build_sdk_client(settings))
 
     @classmethod
-    def from_env(cls, environ: dict[str, str] | None = None) -> "SpectronClient":
-        """Build a client from ``SPECTRON_*`` environment variables."""
-        return cls.from_settings(SpectronSettings.from_env(environ))
+    def from_env(cls, environ: dict[str, str] | None = None) -> "AgentMemoryClient":
+        """Build a client from ``AGENT_MEMORY_*`` environment variables."""
+        return cls.from_settings(AgentMemorySettings.from_env(environ))
 
     # ------------------------------------------------------------------
     # Memory operations
@@ -123,12 +123,12 @@ class SpectronClient:
         memory_category: str | None = None,
         labels: list[str] | None = None,
     ) -> str:
-        """Write ``content`` into Spectron memory.
+        """Write ``content`` into AgentMemory memory.
 
         Args:
             content: The text to store.
             scope: Memory partition to write to.
-            memory_category: Optional Spectron memory category, for example
+            memory_category: Optional AgentMemory memory category, for example
                 ``"semantic"``, ``"episodic"``, or ``"preference"``.
             labels: Optional labels to attach to the stored memory.
 
@@ -175,7 +175,7 @@ class SpectronClient:
         """Assemble a context block for ``query`` from stored memory.
 
         Backed by the SDK ``query_context`` method. Where ``recall`` returns
-        individual matches, this returns a single block Spectron has already
+        individual matches, this returns a single block AgentMemory has already
         ranked and stitched together for use in a prompt.
         """
         kwargs = self._read_scope(scope, include_session=False)
@@ -267,22 +267,22 @@ class SpectronClient:
         return kwargs
 
 
-def _build_sdk_client(settings: SpectronSettings) -> Any:
-    """Construct the underlying Spectron SDK client from settings.
+def _build_sdk_client(settings: AgentMemorySettings) -> Any:
+    """Construct the underlying AgentMemory SDK client from settings.
 
-    Uses ``AsyncSpectron`` so the adapter can await its methods. The client is
+    Uses ``AsyncMemory`` so the adapter can await its methods. The client is
     created but does not open a connection until an operation runs.
     """
     try:
-        from surrealdb import AsyncSpectron
+        from surrealdb.memory import AsyncMemory
     except ImportError as exc:  # pragma: no cover - exercised only without the SDK
         raise ImportError(
-            "The Spectron SDK is required to build a client from settings. "
+            "The AgentMemory SDK is required to build a client from settings. "
             "Install it with `pip install surrealdb`, or pass an "
-            "already-constructed SDK client to SpectronClient.from_sdk()."
+            "already-constructed SDK client to AgentMemoryClient.from_sdk()."
         ) from exc
 
-    return AsyncSpectron(
+    return AsyncMemory(
         settings.context,
         endpoint=settings.endpoint,
         api_key=settings.api_key,
