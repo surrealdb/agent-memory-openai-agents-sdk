@@ -1,10 +1,10 @@
-# Spectron for the OpenAI Agents SDK
+# Agent Memory for the OpenAI Agents SDK
 
 Give agents built with the [OpenAI Agents SDK](https://openai.github.io/openai-agents-python/)
-a durable, shared memory backed by [Spectron](https://surrealdb.com/platform/spectron),
+a durable, shared memory backed by [Agent Memory](https://surrealdb.com/agent-memory),
 SurrealDB's memory and knowledge layer.
 
-Spectron stores facts, past turns, preferences, and knowledge as a graph with temporal
+Agent Memory stores facts, past turns, preferences, and knowledge as a graph with temporal
 awareness, and lets several agents read and write the same memory. This package wires that
 into the Agents SDK so an agent can remember across runs and recall what it needs before it
 answers.
@@ -20,25 +20,25 @@ There are two ways to use memory, and they compose:
    injects it into the prompt, runs the agent, and stores the result. The agent needs no memory
    tools of its own.
 
-Both talk to Spectron through a single `SpectronClient`, scoped by a `MemoryScope`
+Both talk to Agent Memory through a single `AgentMemoryClient`, scoped by a `MemoryScope`
 (`agent_id`, `session_id`, `user_id`).
 
 ## Installation
 
 ```bash
-pip install spectron-openai-agents-sdk
+pip install agent-memory-openai-agents-sdk
 ```
 
-This pulls in the Spectron SDK (`surrealdb`), which the integration
+This pulls in the Agent Memory SDK (`surrealdb`), which the integration
 uses to reach a deployment.
 
 Set the connection and model credentials:
 
 ```bash
 export OPENAI_API_KEY="your-openai-api-key"
-export SPECTRON_ENDPOINT="https://your-spectron-endpoint"
-export SPECTRON_CONTEXT="your-memory-context"
-export SPECTRON_API_KEY="your-api-key"   # optional for local, unsecured instances
+export AGENT_MEMORY_ENDPOINT="https://your-agent_memory-endpoint"
+export AGENT_MEMORY_CONTEXT="your-memory-context"
+export AGENT_MEMORY_API_KEY="your-api-key"   # optional for local, unsecured instances
 ```
 
 ## Usage
@@ -47,7 +47,7 @@ export SPECTRON_API_KEY="your-api-key"   # optional for local, unsecured instanc
 
 ```python
 from agents import Agent, Runner
-from spectron_openai_agents_sdk import get_spectron_tools
+from agent_memory_openai_agents_sdk import get_agent_memory_tools
 
 agent = Agent(
     name="assistant",
@@ -55,7 +55,7 @@ agent = Agent(
         "You are a helpful assistant. Use recall to check memory before you "
         "answer, and use remember to store anything worth keeping."
     ),
-    tools=get_spectron_tools(session_id="user-123"),
+    tools=get_agent_memory_tools(session_id="user-123"),
 )
 
 Runner.run_sync(agent, "My name is Ada and I work on databases.")
@@ -64,15 +64,15 @@ result = Runner.run_sync(agent, "What do you know about me?")
 print(result.final_output)
 ```
 
-`get_spectron_tools` builds the tools from `SPECTRON_*` environment variables by default. Pass a
-`client=` to use an explicit `SpectronClient`, and `include=` to choose a subset of operations.
+`get_agent_memory_tools` builds the tools from `AGENT_MEMORY_*` environment variables by default. Pass a
+`client=` to use an explicit `AgentMemoryClient`, and `include=` to choose a subset of operations.
 
 ### Automatic memory around a run
 
 ```python
 import asyncio
 from agents import Agent
-from spectron_openai_agents_sdk import MemoryScope, run_with_memory
+from agent_memory_openai_agents_sdk import MemoryScope, run_with_memory
 
 agent = Agent(name="assistant", instructions="You are a helpful assistant.")
 scope = MemoryScope(session_id="user-123")
@@ -88,14 +88,14 @@ asyncio.run(main())
 
 ### Persisting output with hooks
 
-To save an agent's output while running it yourself, attach `SpectronMemoryHooks`:
+To save an agent's output while running it yourself, attach `AgentMemoryHooks`:
 
 ```python
 from agents import Runner
-from spectron_openai_agents_sdk import SpectronClient, SpectronMemoryHooks, MemoryScope
+from agent_memory_openai_agents_sdk import AgentMemoryClient, AgentMemoryHooks, MemoryScope
 
-client = SpectronClient.from_env()
-hooks = SpectronMemoryHooks(client, MemoryScope(session_id="user-123"))
+client = AgentMemoryClient.from_env()
+hooks = AgentMemoryHooks(client, MemoryScope(session_id="user-123"))
 
 await Runner.run(agent, "Summarize our project decisions.", hooks=hooks)
 ```
@@ -112,7 +112,7 @@ await Runner.run(agent, "Summarize our project decisions.", hooks=hooks)
 
 ## Multi-agent shared memory
 
-Agents that share a `MemoryScope` read and write the same Spectron memory, so knowledge one agent
+Agents that share a `MemoryScope` read and write the same Agent Memory, so knowledge one agent
 stores is available to another. See
 [`examples/04_multi_agent_shared_memory.py`](examples/04_multi_agent_shared_memory.py).
 
@@ -127,9 +127,9 @@ Runnable scripts live in [`examples/`](examples/):
 
 ## Configuration notes
 
-This integration targets the Spectron client in `surrealdb` 3.x, which exposes `Spectron` and
-`AsyncSpectron`. The SDK is imported lazily, only when a client is built from settings or the
-environment, and all SDK calls live in `src/spectron_openai_agents_sdk/client.py`. If a future SDK
+This integration targets the Agent Memory client in `surrealdb` 3.x, which exposes `AgentMemory` and
+`AsyncMemory`. The SDK is imported lazily, only when a client is built from settings or the
+environment, and all SDK calls live in `src/agent_memory_openai_agents_sdk/client.py`. If a future SDK
 release changes a method name or constructor argument, that file is the single place to adjust; the
 tools, hooks, and examples do not change.
 

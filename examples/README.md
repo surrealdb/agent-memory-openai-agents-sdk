@@ -1,13 +1,13 @@
 # Examples
 
-Each script is runnable on its own. They need a working Spectron endpoint and an
+Each script is runnable on its own. They need a working Agent Memory endpoint and an
 OpenAI API key set in the environment:
 
 ```bash
 export OPENAI_API_KEY="your-openai-api-key"
-export SPECTRON_ENDPOINT="https://your-spectron-endpoint"
-export SPECTRON_CONTEXT="your-memory-context"
-export SPECTRON_API_KEY="your-api-key"   # optional for local instances
+export AGENT_MEMORY_ENDPOINT="https://your-agent_memory-endpoint"
+export AGENT_MEMORY_CONTEXT="your-memory-context"
+export AGENT_MEMORY_API_KEY="your-api-key"   # optional for local instances
 ```
 
 Install the package before running them:

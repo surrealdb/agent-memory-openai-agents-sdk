@@ -1,4 +1,4 @@
-"""Inject Spectron memory into an agent's system prompt.
+"""Inject Agent Memory into an agent's system prompt.
 
 The OpenAI Agents SDK lets ``Agent(instructions=...)`` be a callable that builds
 the system prompt at run time. :func:`memory_instructions` returns such a
@@ -7,14 +7,14 @@ scope without the caller wiring anything up per turn.
 
 The callable does not have access to the run input, so it injects a general
 memory summary rather than a query-targeted one. For recall aimed at a specific
-message, use :func:`spectron_openai_agents_sdk.run_with_memory` instead.
+message, use :func:`agent_memory_openai_agents_sdk.run_with_memory` instead.
 """
 
 from __future__ import annotations
 
 from typing import Any, Awaitable, Callable
 
-from .client import SpectronClient
+from .client import AgentMemoryClient
 from .config import MemoryScope
 
 MEMORY_HEADER = "# What you remember"
@@ -24,7 +24,7 @@ InstructionsFn = Callable[[Any, Any], Awaitable[str]]
 
 def memory_instructions(
     base_instructions: str,
-    client: SpectronClient,
+    client: AgentMemoryClient,
     scope: MemoryScope | None = None,
     *,
     focus: str,
@@ -38,11 +38,11 @@ def memory_instructions(
 
     The callable does not have access to the run input, so ``focus`` fixes the
     topic to summarize. For recall aimed at a specific message, use
-    :func:`spectron_openai_agents_sdk.run_with_memory` instead.
+    :func:`agent_memory_openai_agents_sdk.run_with_memory` instead.
 
     Args:
         base_instructions: The agent's normal system prompt.
-        client: The Spectron client to read memory from.
+        client: The Agent Memory client to read memory from.
         scope: Memory partition to summarize.
         focus: The topic to build a context block for.
 

@@ -1,7 +1,7 @@
 """Shared test fixtures.
 
-The ``FakeSpectronClient`` stands in for a real Spectron deployment so the tests
-run offline. It matches the async surface of ``SpectronClient`` and keeps every
+The ``FakeAgentMemoryClient`` stands in for a real Agent Memory deployment so the tests
+run offline. It matches the async surface of ``AgentMemoryClient`` and keeps every
 stored item in a list, scoped by the fields passed on each call.
 """
 
@@ -11,7 +11,7 @@ from typing import Any
 
 import pytest
 
-from spectron_openai_agents_sdk.config import MemoryScope
+from agent_memory_openai_agents_sdk.config import MemoryScope
 
 
 def _keywords(text: str) -> set[str]:
@@ -24,8 +24,8 @@ def _keywords(text: str) -> set[str]:
     return {word for word in cleaned.split() if len(word) >= 3}
 
 
-class FakeSpectronClient:
-    """In-memory stand-in for ``SpectronClient`` used across the tests."""
+class FakeAgentMemoryClient:
+    """In-memory stand-in for ``AgentMemoryClient`` used across the tests."""
 
     def __init__(self) -> None:
         self.stored: list[dict[str, Any]] = []
@@ -82,5 +82,5 @@ class FakeSpectronClient:
 
 
 @pytest.fixture
-def fake_client() -> FakeSpectronClient:
-    return FakeSpectronClient()
+def fake_client() -> FakeAgentMemoryClient:
+    return FakeAgentMemoryClient()

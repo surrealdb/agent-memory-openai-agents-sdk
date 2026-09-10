@@ -1,4 +1,4 @@
-"""Exercise the full Spectron tool set from a single agent.
+"""Exercise the full Agent Memory tool set from a single agent.
 
 This gives the agent every memory operation (remember, recall, context,
 reflect, forget) and sends a sequence of prompts that lead it to choose the
@@ -7,8 +7,8 @@ reflect, and removes a fact with forget.
 
 Required environment variables:
     OPENAI_API_KEY
-    SPECTRON_ENDPOINT, SPECTRON_CONTEXT
-    SPECTRON_API_KEY (optional)
+    AGENT_MEMORY_ENDPOINT, AGENT_MEMORY_CONTEXT
+    AGENT_MEMORY_API_KEY (optional)
 
 Run it with:
     python examples/02_function_tools.py
@@ -16,7 +16,7 @@ Run it with:
 
 from agents import Agent, Runner
 
-from spectron_openai_agents_sdk import get_spectron_tools
+from agent_memory_openai_agents_sdk import get_agent_memory_tools
 
 
 def main() -> None:
@@ -28,7 +28,7 @@ def main() -> None:
             "building context from memory. Use reflect to summarize what you "
             "know, and forget to remove information when asked."
         ),
-        tools=get_spectron_tools(
+        tools=get_agent_memory_tools(
             session_id="tools-demo",
             include=("remember", "recall", "context", "reflect", "forget"),
         ),

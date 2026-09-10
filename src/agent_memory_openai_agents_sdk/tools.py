@@ -1,18 +1,18 @@
-"""Spectron memory operations exposed as OpenAI Agents function tools.
+"""Agent Memory operations exposed as OpenAI Agents function tools.
 
-Use :func:`get_spectron_tools` to build a list of tools bound to a client and a
+Use :func:`get_agent_memory_tools` to build a list of tools bound to a client and a
 memory scope, then pass them to an ``Agent``:
 
     from agents import Agent
-    from spectron_openai_agents_sdk import get_spectron_tools
+    from agent_memory_openai_agents_sdk import get_agent_memory_tools
 
     agent = Agent(
         name="assistant",
         instructions="You are a helpful assistant with a long-term memory.",
-        tools=get_spectron_tools(session_id="user-123"),
+        tools=get_agent_memory_tools(session_id="user-123"),
     )
 
-Each tool is a thin wrapper over a :class:`SpectronClient` method. The client
+Each tool is a thin wrapper over a :class:`AgentMemoryClient` method. The client
 and scope are captured in a closure so the model only supplies the arguments
 that matter to it (content, query, and so on).
 """
@@ -24,7 +24,7 @@ from typing import Any
 from agents import function_tool
 from agents.tool import FunctionTool
 
-from .client import SpectronClient
+from .client import AgentMemoryClient
 from .config import MemoryScope
 
 #: The operations included by default, in the order agents usually reach for them.
@@ -36,18 +36,18 @@ DEFAULT_OPERATIONS: tuple[str, ...] = (
     "forget",
 )
 
-_default_client: SpectronClient | None = None
+_default_client: AgentMemoryClient | None = None
 
 
-def _get_default_client() -> SpectronClient:
+def _get_default_client() -> AgentMemoryClient:
     """Return a process-wide client built lazily from the environment."""
     global _default_client
     if _default_client is None:
-        _default_client = SpectronClient.from_env()
+        _default_client = AgentMemoryClient.from_env()
     return _default_client
 
 
-def _remember_tool(client: SpectronClient, scope: MemoryScope) -> FunctionTool:
+def _remember_tool(client: AgentMemoryClient, scope: MemoryScope) -> FunctionTool:
     @function_tool(name_override="remember")
     async def remember(content: str, memory_category: str | None = None) -> str:
         """Store a fact, preference, or event in long-term memory.
@@ -58,14 +58,14 @@ def _remember_tool(client: SpectronClient, scope: MemoryScope) -> FunctionTool:
         Args:
             content: The information to store, written as a clear statement.
             memory_category: Optional category, for example "semantic",
-                "episodic", or "preference". Leave unset to let Spectron decide.
+                "episodic", or "preference". Leave unset to let Agent Memory decide.
         """
         return await client.remember(content, scope, memory_category=memory_category)
 
     return remember
 
 
-def _recall_tool(client: SpectronClient, scope: MemoryScope) -> FunctionTool:
+def _recall_tool(client: AgentMemoryClient, scope: MemoryScope) -> FunctionTool:
     @function_tool(name_override="recall")
     async def recall(query: str, limit: int = 5) -> str:
         """Search long-term memory for information relevant to a query.
@@ -82,7 +82,7 @@ def _recall_tool(client: SpectronClient, scope: MemoryScope) -> FunctionTool:
     return recall
 
 
-def _context_tool(client: SpectronClient, scope: MemoryScope) -> FunctionTool:
+def _context_tool(client: AgentMemoryClient, scope: MemoryScope) -> FunctionTool:
     @function_tool(name_override="context")
     async def context(query: str) -> str:
         """Assemble a ready-to-use context block for a query.
@@ -98,7 +98,7 @@ def _context_tool(client: SpectronClient, scope: MemoryScope) -> FunctionTool:
     return context
 
 
-def _reflect_tool(client: SpectronClient, scope: MemoryScope) -> FunctionTool:
+def _reflect_tool(client: AgentMemoryClient, scope: MemoryScope) -> FunctionTool:
     @function_tool(name_override="reflect")
     async def reflect(query: str) -> str:
         """Synthesize stored memory into a higher-level summary.
@@ -114,7 +114,7 @@ def _reflect_tool(client: SpectronClient, scope: MemoryScope) -> FunctionTool:
     return reflect
 
 
-def _forget_tool(client: SpectronClient, scope: MemoryScope) -> FunctionTool:
+def _forget_tool(client: AgentMemoryClient, scope: MemoryScope) -> FunctionTool:
     @function_tool(name_override="forget")
     async def forget(query: str) -> str:
         """Remove information from long-term memory.
@@ -139,19 +139,19 @@ _BUILDERS: dict[str, Any] = {
 }
 
 
-def get_spectron_tools(
-    client: SpectronClient | None = None,
+def get_agent_memory_tools(
+    client: AgentMemoryClient | None = None,
     *,
     agent_id: str | None = None,
     session_id: str | None = None,
     user_id: str | None = None,
     include: tuple[str, ...] = DEFAULT_OPERATIONS,
 ) -> list[FunctionTool]:
-    """Build Spectron memory tools bound to a client and scope.
+    """Build Agent Memory tools bound to a client and scope.
 
     Args:
-        client: The Spectron client to use. Defaults to a client built lazily
-            from ``SPECTRON_*`` environment variables.
+        client: The Agent Memory client to use. Defaults to a client built lazily
+            from ``AGENT_MEMORY_*`` environment variables.
         agent_id: Optional agent identifier for the memory scope.
         session_id: Optional session identifier for the memory scope.
         user_id: Optional user identifier for the memory scope.
@@ -167,7 +167,7 @@ def get_spectron_tools(
     unknown = [name for name in include if name not in _BUILDERS]
     if unknown:
         raise ValueError(
-            "Unknown Spectron operation(s): "
+            "Unknown Agent Memory operation(s): "
             + ", ".join(unknown)
             + ". Choose from: "
             + ", ".join(_BUILDERS)

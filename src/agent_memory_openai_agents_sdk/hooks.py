@@ -1,8 +1,8 @@
-"""Automatic Spectron memory around an agent run.
+"""Automatic Agent Memory around an agent run.
 
 Two entry points are provided:
 
-- :class:`SpectronMemoryHooks` is a ``RunHooks`` implementation that persists an
+- :class:`AgentMemoryHooks` is a ``RunHooks`` implementation that persists an
   agent's output (and optionally its tool results) as they happen. Attach it to
   any ``Runner.run`` call to save what an agent produces without changing the
   agent itself.
@@ -19,26 +19,26 @@ from typing import Any
 from agents import Runner
 from agents.lifecycle import RunHooks
 
-from .client import SpectronClient
+from .client import AgentMemoryClient
 from .config import MemoryScope
 
 MEMORY_CONTEXT_HEADER = "Relevant information from memory:"
 
 
-class SpectronMemoryHooks(RunHooks):
-    """Persist agent output to Spectron as a run progresses.
+class AgentMemoryHooks(RunHooks):
+    """Persist agent output to Agent Memory as a run progresses.
 
     Lifecycle hooks in the Agents SDK are observational, so this class writes to
     memory as a side effect and never alters the prompt. Use it when you run an
     agent through ``Runner`` yourself and want its output saved automatically:
 
-        hooks = SpectronMemoryHooks(client, MemoryScope(session_id="s1"))
+        hooks = AgentMemoryHooks(client, MemoryScope(session_id="s1"))
         await Runner.run(agent, "Hello", hooks=hooks)
     """
 
     def __init__(
         self,
-        client: SpectronClient,
+        client: AgentMemoryClient,
         scope: MemoryScope | None = None,
         *,
         persist_output: bool = True,
@@ -47,11 +47,11 @@ class SpectronMemoryHooks(RunHooks):
         """Configure what the hooks persist.
 
         Args:
-            client: The Spectron client to write through.
+            client: The Agent Memory client to write through.
             scope: Memory partition to write to.
             persist_output: Store each agent's final output when it finishes.
             persist_tool_results: Store the result of every tool call. Off by
-                default because Spectron memory tools already write on their own.
+                default because Agent Memory tools already write on their own.
         """
         self._client = client
         self._scope = scope or MemoryScope()
@@ -90,7 +90,7 @@ async def run_with_memory(
     agent: Any,
     input: str | list[Any],
     *,
-    client: SpectronClient | None = None,
+    client: AgentMemoryClient | None = None,
     scope: MemoryScope | None = None,
     recall_limit: int = 5,
     use_context: bool = False,
@@ -112,7 +112,7 @@ async def run_with_memory(
     Args:
         agent: The agent to run.
         input: The user input, either a string or a list of input items.
-        client: The Spectron client. Defaults to one built from the environment.
+        client: The Agent Memory client. Defaults to one built from the environment.
         scope: Memory partition to read from and write to.
         recall_limit: Maximum number of memories to recall.
         use_context: Recall a single ``context`` block instead of a list of
@@ -127,7 +127,7 @@ async def run_with_memory(
     Returns:
         The ``RunResult`` returned by ``runner.run``.
     """
-    resolved_client = client if client is not None else SpectronClient.from_env()
+    resolved_client = client if client is not None else AgentMemoryClient.from_env()
     resolved_scope = scope or MemoryScope()
 
     query = _input_to_text(input)

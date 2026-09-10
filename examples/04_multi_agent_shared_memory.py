@@ -1,4 +1,4 @@
-"""Two agents sharing one Spectron memory through a handoff.
+"""Two agents sharing one Agent Memory through a handoff.
 
 A research agent gathers facts and stores them. It then hands off to a writer
 agent that reads the same memory to produce a summary. Because both agents use
@@ -6,8 +6,8 @@ the same MemoryScope, knowledge stored by one is available to the other.
 
 Required environment variables:
     OPENAI_API_KEY
-    SPECTRON_ENDPOINT, SPECTRON_CONTEXT
-    SPECTRON_API_KEY (optional)
+    AGENT_MEMORY_ENDPOINT, AGENT_MEMORY_CONTEXT
+    AGENT_MEMORY_API_KEY (optional)
 
 Run it with:
     python examples/04_multi_agent_shared_memory.py
@@ -15,7 +15,7 @@ Run it with:
 
 from agents import Agent, Runner
 
-from spectron_openai_agents_sdk import get_spectron_tools
+from agent_memory_openai_agents_sdk import get_agent_memory_tools
 
 # Both agents share this scope, so they read and write the same memory.
 SHARED_SESSION = "shared-project"
@@ -28,7 +28,7 @@ def main() -> None:
             "You write short project briefs. Recall everything in memory about "
             "the project and turn it into a two sentence summary."
         ),
-        tools=get_spectron_tools(session_id=SHARED_SESSION, include=("recall", "context")),
+        tools=get_agent_memory_tools(session_id=SHARED_SESSION, include=("recall", "context")),
     )
 
     researcher = Agent(
@@ -38,7 +38,7 @@ def main() -> None:
             "remember. When the user asks for a written summary, hand off to "
             "the writer."
         ),
-        tools=get_spectron_tools(session_id=SHARED_SESSION, include=("remember", "recall")),
+        tools=get_agent_memory_tools(session_id=SHARED_SESSION, include=("remember", "recall")),
         handoffs=[writer],
     )
 
